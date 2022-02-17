@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
+import { format } from 'date-fns';
 
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -48,6 +49,22 @@ app.use(passport.session());
 
 app.locals = {
   // TODO hjálparföll fyrir template
+  formatDate: (str) => {
+    let date = '';
+
+    try {
+      date = format(str || '', 'dd.MM.yyyy');
+    } catch {
+      return '';
+    }
+
+    return date;
+  },
+  isInvalid: function isInvalid(field, errors = []) {
+    // Boolean skilar `true` ef gildi er truthy (eitthvað fannst)
+    // eða `false` ef gildi er falsy (ekkert fannst: null)
+    return Boolean(errors.find((i) => i && i.param === field));
+  },
 };
 
 app.use('/', indexRouter);

@@ -3,32 +3,18 @@ import xss from 'xss';
 
 // import { deleteRow, list, total } from './db.js';
 import passport, { ensureLoggedIn } from '../lib/login.js';
-import { catchErrors, pagingInfo, PAGE_SIZE } from '../lib/utils.js';
+import { catchErrors } from '../lib/catch-errors.js';
 
 export const adminRouter = express.Router();
 
 async function index(req, res) {
-  // let { page = 1 } = req.query;
-  // page = Number(page);
 
   const { search } = req.query;
-
-  // const offset = (page - 1) * PAGE_SIZE;
-
-  // // const registrations = await list(offset, PAGE_SIZE, search);
-  // // const totalRegistrations = await total(search);
-  // const paging = await pagingInfo(
-  //   {
-  //     page, offset, totalRegistrations, registrationsLength: registrations.length,
-  //   },
-  // );
 
   const { user } = req;
 
   return res.render('admin', {
     user,
-    // registrations,
-    // paging,
     title: 'Undirskriftarlisti — umsjón',
     admin: true,
     search: xss(search),
