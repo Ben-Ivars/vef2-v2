@@ -1,22 +1,3 @@
-// import express from 'express';
-// // import { listComments } from '../lib/db.js';
-
-// export const adminRouter = express.Router();
-
-// export function ensureLoggedIn(req, res, next) {
-//   if (req.isAuthenticated()) {
-//     return next();
-//   }
-
-//   return res.redirect('/login');
-// }
-
-// adminRouter.get('/', ensureLoggedIn, async (req, res) => {
-//   // const comments = await listComments();
-//   const comments = 'comments'
-//   res.render('admin', { title: 'admin svæði', comments });
-// });
-
 import express from 'express';
 import xss from 'xss';
 
@@ -55,9 +36,9 @@ async function index(req, res) {
 }
 
 function login(req, res) {
-  // if (req.isAuthenticated()) {
-  //   return res.redirect('/admin');
-  // }
+  if (req.isAuthenticated()) {
+    return res.redirect('/admin');
+  }
 
   let message = '';
 
