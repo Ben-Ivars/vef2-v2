@@ -1,13 +1,28 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import session from 'express-session';
+
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 // import { isInvalid } from './lib/template-helpers.js';
+
+import passport from './lib/login.js';
 import { indexRouter } from './routes/index-routes.js';
+import { adminRouter } from './routes/admin-routes.js';
 
 dotenv.config();
 
-const { PORT: port = 3000 } = process.env;
+// const { PORT: port = 3000 } = process.env;
+const {
+  PORT: port = 3000,
+  SESSION_SECRET: sessionSecret,
+  DATABASE_URL: connectionString,
+} = process.env;
+
+if (!connectionString || !sessionSecret) {
+  console.error('Vantar gögn í env');
+  process.exit(1);
+}
 
 const app = express();
 
@@ -20,12 +35,25 @@ app.use(express.static(join(path, '../public')));
 app.set('views', join(path, '../views'));
 app.set('view engine', 'ejs');
 
+// added
+app.use(session({
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  maxAge: 20 * 1000, // 20 sek
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.locals = {
   // TODO hjálparföll fyrir template
 };
 
 app.use('/', indexRouter);
 // TODO admin routes
+app.use('/admin', adminRouter);
+
 
 /** Middleware sem sér um 404 villur. */
 app.use((req, res) => {
