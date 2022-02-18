@@ -54,7 +54,7 @@ async function eventRoute(req, res, next) {
   res.render('event', { title: event.name, event, bookings, errors, formData });
 }
 
-const validationMiddleware = [
+export const validationMiddleware = [
   body('name').isLength({ min: 1 }).withMessage('Nafn má ekki vera tómt'),
   body('name')
     .isLength({ max: 64 })
@@ -64,12 +64,12 @@ const validationMiddleware = [
     .withMessage('Athugasemd má að hámarki vera 128 stafir'),
 ];
 
-const xssSanitizationMiddleware = [
+export const xssSanitizationMiddleware = [
   body('name').customSanitizer((v) => xss(v)),
   body('comment').customSanitizer((v) => xss(v)),
 ];
 
-const sanitizationMiddleware = [
+export const sanitizationMiddleware = [
   body('name').trim().escape(),
   body('comment').trim().escape(),
 ];

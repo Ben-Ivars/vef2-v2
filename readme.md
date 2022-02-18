@@ -2,6 +2,9 @@
 
 **Username: admin og password:123**
 
+ATH! að eyða viðburði er ekki hluti af verkefninu og virkar ekki nema það sé enginn skráður á viðburð
+að sökum foreign key constraint. Ég leyfi þessu hins vegar að hanga inni þar sem ég ætla mér að láta þetta virka seinna þegar ég hef meiri tíma. 
+Það er minnsta mál að eyða út ef þetta flækist fyrir og endilega hafið samband í tölvuposti **bai3@hi.is** ef þetta dregur mig eitthvað niður og get þá hent þessu út á 1 min
 
 [Kynning á verkefni í tíma](https://youtu.be/pLwY4LiR6gc).
 

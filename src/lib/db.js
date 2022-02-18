@@ -142,39 +142,11 @@ export async function insertEvent({ name, description } = {}) {
 
   return success;
 }
-
-// /**
-//  * Insert a signup registration into the signup table.
-//  *
-//  * @param {string} entry.name – name of user who is signing up
-//  * @param {string} entry.comment – comment about signup
-//  * @param {Date} entry.event – id of event to be updated
-
-//  * @returns {Promise<boolean>} Promise, resolved as true if inserted, otherwise false
-//  */
-// export async function insertSignup({
-//   name, comment, event,
-// } = {}) {
-//   let success = true;
-
-//   const q = `
-//     INSERT INTO events
-//       (name, comment, event)
-//     VALUES
-//       ($1, $2, $3);
-//   `;
-//   const values = [name, comment, event];
-
-//   try {
-//     await query(q, values);
-//   } catch (e) {
-//     console.error('Error inserting signup', e);
-//     success = false;
-//   }
-
-//   return success;
-// }
-
+/**
+ * Selects an event from events table with given slug
+ * @param {*} slug slug to event
+ * @returns event
+ */
 export async function selectEvent(slug) {
   const q = `
   SELECT * FROM events
