@@ -244,3 +244,26 @@ export async function insertBooking({ name, comment, id } = {}) {
 
   return success;
 }
+
+export async function updateEvent(slug, { name, description } = {}) {
+  let success = true;
+
+  const q = `
+    UPDATE events
+    SET name = $1,
+      description = $2,
+      updated = CURRENT_TIMESTAMP
+    WHERE
+      slug = $3;
+  `;
+  const values = [name, description, slug];
+
+  try {
+    await query(q, values);
+  } catch (e) {
+    console.error('Error updating event', e);
+    success = false;
+  }
+
+  return success;
+}

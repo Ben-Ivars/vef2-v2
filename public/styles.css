@@ -203,6 +203,11 @@ h2 {
   word-break: break-all;
   overflow-wrap: anywhere;
 }
+.registrations__table .comment {
+  min-width: 150px;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
 
 /* Paging */
 

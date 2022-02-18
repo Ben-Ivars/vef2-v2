@@ -2,7 +2,10 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import xss from 'xss';
 
-import { listEvents, insertEvent, deleteRowEvents } from '../lib/db.js'
+import {
+  listEvents, insertEvent, deleteRowEvents, updateEvent, selectEvent,
+  selectEventBookings
+} from '../lib/db.js'
 import passport, { ensureLoggedIn } from '../lib/login.js';
 import { catchErrors } from '../lib/catch-errors.js';
 
@@ -31,6 +34,31 @@ async function adminRoute(req, res) {
     events,
     formData,
   });
+}
+async function adminEventRoute(req, res, next) {
+  let event = {};
+  let bookings = [];
+  const admin = true;
+  const formData = {
+    name: '',
+    description: '',
+  };
+  const errors = [];
+  try {
+    const queryResult = await selectEvent(req.params.slug);
+    if (queryResult.length > 0) {
+      // eslint-disable-next-line prefer-destructuring
+      event = queryResult[0];
+      bookings = await selectEventBookings(event.id);
+    } else {
+      next();
+      return;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  res.render('event-admin', { title: event.name, event, bookings, errors, formData, admin });
 }
 
 function login(req, res) {
@@ -126,17 +154,48 @@ async function validationCheck(req, res, next) {
   const validation = validationResult(req);
 
   if (!validation.isEmpty()) {
-    return res.render('admin', { formData, errors: validation.errors, registrations });
+    return res.render('admin', {
+      formData,
+      errors: validation.errors,
+      registrations
+    });
   }
 
   return next();
 }
 
-async function register(req, res) {
+async function fixEvent(req, res) {
   const { name, description } = req.body;
-  console.log(name);
   let success = true;
+  let event = {};
+  try {
+    const queryResult = await selectEvent(req.params.slug);
+    if (queryResult.length > 0) {
+      event = queryResult[0];
+      success = await updateEvent(req.params.slug, {
+        name, description,
+      });
 
+    } else {
+      success = false;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  if (success) {
+    return res.redirect(`/admin/${event.slug || ''}`);
+  }
+
+  return res.render('error', {
+    title: 'Gat ekki uppfært viðburð!',
+    text: 'Gékk ekki að uppfæra viðburð'
+  });
+}
+
+async function registerEvent(req, res) {
+  const { name, description } = req.body;
+  let success = true;
   try {
     success = await insertEvent({
       name, description,
@@ -146,18 +205,31 @@ async function register(req, res) {
   }
 
   if (success) {
-    return res.redirect('/');
+    return res.redirect('/admin');
   }
 
-  return res.render('error', { title: 'Gat ekki skráð!', text: 'Gékk ekki að skrá viðburð' });
+  return res.render('error', {
+    title: 'Gat ekki skráð viðburð!',
+    text: 'Gékk ekki að skrá viðburð'
+  });
 }
+
 // TODO fix admin skra vidburd
+adminRouter.get('/:slug', catchErrors(adminEventRoute));
 adminRouter.post(
-  '/admin/:slug',
+  '/:slug',
   validationMiddleware,
   xssSanitizationMiddleware,
   sanitizationMiddleware,
-  catchErrors(validationCheck),
-  catchErrors(register),
+  // catchErrors(validationCheck),
+  catchErrors(fixEvent),
+);
+adminRouter.post(
+  '/',
+  validationMiddleware,
+  xssSanitizationMiddleware,
+  sanitizationMiddleware,
+  // catchErrors(validationCheck),
+  catchErrors(registerEvent),
 );
 

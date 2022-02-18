@@ -52,10 +52,9 @@ app.locals = {
   isInvalid,
 };
 
-
+app.use('/admin', adminRouter);
 app.use('/', indexRouter);
 // TODO admin routes
-app.use('/admin', adminRouter);
 
 
 /** Middleware sem sér um 404 villur. */

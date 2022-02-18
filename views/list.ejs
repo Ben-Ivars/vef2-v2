@@ -28,21 +28,30 @@
                 <td class="date">
                   <%= formatDate(row.created) %>
                 </td>
-                <td class="name">
-                  <a href="<%= row.slug %>">
-                    <%= row.name %>
-                  </a>
-                </td>
-                <td class="comment">
-                  <%= row.description %>
-                </td>
                 <% if (admin) { %>
-                  <td>
-                    <form class="delete-form" method="post" action="/admin/delete/<%= row.id %>">
-                      <button class="button">Eyða</button>
-                    </form>
+                  <td class="name">
+                    <a href="admin/<%= row.slug %>">
+                      <%= row.name %>
+                    </a>
                   </td>
                   <% } %>
+                    <% if (!admin) { %>
+                      <td class="name">
+                        <a href="<%= row.slug %>">
+                          <%= row.name %>
+                        </a>
+                      </td>
+                      <% } %>
+                        <td class="comment">
+                          <%= row.description %>
+                        </td>
+                        <% if (admin) { %>
+                          <td>
+                            <form class="delete-form" method="post" action="/admin/delete/<%= row.id %>">
+                              <button class="button">Eyða</button>
+                            </form>
+                          </td>
+                          <% } %>
               </tr>
               <% }) %>
                 </tr>

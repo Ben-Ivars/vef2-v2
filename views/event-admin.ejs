@@ -38,9 +38,9 @@
   </section>
   <br>
   <section>
-    <h2>Skráðu þig!</h2>
+    <h2>Uppfæra viðburð</h2>
     <br>
-    <form method="post" action="<%= event.slug %>" enctype="application/x-www-form-urlencoded"
+    <form method="post" action="<%=event.slug %>" enctype="application/x-www-form-urlencoded"
       class="form form--separated">
       <div class="field<%= locals.isInvalid('name', errors) ? ' field--invalid' : '' %>">
         <label for="name">Nafn*</label>
@@ -48,8 +48,8 @@
       </div>
 
       <div class="field field--textarea<%= locals.isInvalid('comment', errors) ? ' field--invalid' : '' %>">
-        <label for="comment">Athugasemd:</label>
-        <textarea name="comment" id="comment"><%= formData.comment %></textarea>
+        <label for="comment">Description:</label>
+        <textarea name="comment" id="comment"><%= formData.description %></textarea>
       </div>
 
       <% if (errors.length> 0) { %>
@@ -65,7 +65,7 @@
         </ul>
         <% } %>
 
-          <button class="button button--large button--margin">Skrá mig</button>
+          <button class="button button--large button--margin">Uppfæra!</button>
     </form>
 
   </section>
