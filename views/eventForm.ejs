@@ -6,8 +6,8 @@
   </div>
 
   <div class="field field--textarea<%= locals.isInvalid('description', errors) ?  ' field--invalid' : '' %>">
-    <label for="comment">Athugasemd:</label>
-    <textarea name="comment" id="comment"><%= formData.description %></textarea>
+    <label for="description">Athugasemd:</label>
+    <textarea name="description" id="description"><%= formData.description %></textarea>
   </div>
 
   <% if (errors.length> 0) { %>
