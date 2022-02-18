@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises';
 import pg from 'pg';
+import { strToSlug } from './utils.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
@@ -100,16 +101,20 @@ export async function listEvents(offset = 0, limit = 10) {
 
   return result;
 }
-
-export async function deleteRowSignup(id) {
+// TODO fix for foreign key
+export async function deleteRowEvents(id) {
   let result = [];
   try {
+    const fixSignup = await query(
+      'DELETE FROM signup WHERE id = $1',
+      [id]
+    );
     const queryResult = await query(
-      'DELETE FROM signups WHERE id = $1',
-      [id],
+      'DELETE FROM events WHERE id = $1',
+      [id]
     );
 
-    if (queryResult && queryResult.rows) {
+    if (queryResult && queryResult.rows && fixSignup) {
       result = queryResult.rows;
     }
   } catch (e) {
@@ -129,10 +134,10 @@ export async function deleteRowSignup(id) {
  * @returns {Promise<boolean>} Promise, resolved as true if inserted, otherwise false
  */
 export async function insertEvent({
-  name, slug, description,
+  name, description,
 } = {}) {
   let success = true;
-
+  const slug = strToSlug(name)
   const q = `
     INSERT INTO events
       (name, slug, description)
@@ -151,32 +156,89 @@ export async function insertEvent({
   return success;
 }
 
-/**
- * Insert a signup registration into the signup table.
- *
- * @param {string} entry.name – name of user who is signing up
- * @param {string} entry.comment – comment about signup
- * @param {Date} entry.event – id of event to be updated
+// /**
+//  * Insert a signup registration into the signup table.
+//  *
+//  * @param {string} entry.name – name of user who is signing up
+//  * @param {string} entry.comment – comment about signup
+//  * @param {Date} entry.event – id of event to be updated
 
- * @returns {Promise<boolean>} Promise, resolved as true if inserted, otherwise false
- */
-export async function insertSignup({
-  name, comment, event,
-} = {}) {
+//  * @returns {Promise<boolean>} Promise, resolved as true if inserted, otherwise false
+//  */
+// export async function insertSignup({
+//   name, comment, event,
+// } = {}) {
+//   let success = true;
+
+//   const q = `
+//     INSERT INTO events
+//       (name, comment, event)
+//     VALUES
+//       ($1, $2, $3);
+//   `;
+//   const values = [name, comment, event];
+
+//   try {
+//     await query(q, values);
+//   } catch (e) {
+//     console.error('Error inserting signup', e);
+//     success = false;
+//   }
+
+//   return success;
+// }
+
+export async function selectEvent(slug) {
+  const q = `
+  SELECT * FROM events
+  WHERE
+   slug = $1::text
+  `;
+  let result = [];
+  try {
+    const queryResult = await query(q, [slug]);
+    if (queryResult && queryResult.rows) {
+      result = queryResult.rows;
+    }
+  } catch (e) {
+    console.error('Error selecting events', e);
+  }
+
+  return result;
+}
+
+export async function selectEventBookings(id) {
+  const q = `
+  SELECT * FROM signup
+  WHERE
+   event = $1::integer
+  `;
+  let result = [];
+  try {
+    const queryResult = await query(q, [id]);
+    if (queryResult && queryResult.rows) {
+      result = queryResult.rows;
+    }
+  } catch (e) {
+    console.error('Error selecting bookings for event', e);
+  }
+  return result;
+}
+export async function insertBooking({ name, comment, id } = {}) {
   let success = true;
 
   const q = `
-    INSERT INTO events
+    INSERT INTO signup
       (name, comment, event)
     VALUES
       ($1, $2, $3);
   `;
-  const values = [name, comment, event];
+  const values = [name, comment, id];
 
   try {
     await query(q, values);
   } catch (e) {
-    console.error('Error inserting signup', e);
+    console.error('Error inserting booking', e);
     success = false;
   }
 

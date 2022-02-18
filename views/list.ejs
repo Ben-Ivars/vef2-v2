@@ -29,7 +29,9 @@
                   <%= formatDate(row.created) %>
                 </td>
                 <td class="name">
-                  <%= row.name %>
+                  <a href="<%= row.slug %>">
+                    <%= row.name %>
+                  </a>
                 </td>
                 <td class="comment">
                   <%= row.description %>
