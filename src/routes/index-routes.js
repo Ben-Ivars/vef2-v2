@@ -3,7 +3,12 @@ import { body, validationResult } from 'express-validator';
 import xss from 'xss';
 
 import { catchErrors } from '../lib/catch-errors.js';
-import { listEvents, selectEvent, selectEventBookings, insertBooking } from '../lib/db.js'
+import {
+  listEvents,
+  selectEvent,
+  selectEventBookings,
+  insertBooking,
+} from '../lib/db.js';
 
 export const indexRouter = express.Router();
 
@@ -24,7 +29,6 @@ async function indexRoute(req, res) {
 
 indexRouter.get('/', catchErrors(indexRoute));
 
-// TODO útfæra öll routes
 async function eventRoute(req, res, next) {
   let event = {};
   let bookings = [];
@@ -36,8 +40,7 @@ async function eventRoute(req, res, next) {
   try {
     const queryResult = await selectEvent(req.params.slug);
     if (queryResult.length > 0) {
-      // eslint-disable-next-line prefer-destructuring
-      event = queryResult[0];
+      [event] = queryResult;
       bookings = await selectEventBookings(event.id);
     } else {
       next();
@@ -85,7 +88,7 @@ async function validationCheck(req, res, next) {
     const queryResult = await selectEvent(req.params.slug);
     if (queryResult.length > 0) {
       // eslint-disable-next-line prefer-destructuring
-      event = queryResult[0];
+      [event] = queryResult;
       bookings = await selectEventBookings(event.id);
     } else {
       next();
@@ -116,7 +119,7 @@ async function register(req, res) {
   try {
     const queryResult = await selectEvent(req.params.slug);
     if (queryResult.length > 0) {
-      event = queryResult[0];
+      [event] = queryResult;
       success = await insertBooking({
         name,
         comment,
@@ -133,8 +136,10 @@ async function register(req, res) {
     return res.redirect(`/${event.slug || ''}`);
   }
 
-  return res.render('error', { title: 'Gat ekki skráð!', text: 'Gékk ekki að skrá þig á viðburð' });
-
+  return res.render('error', {
+    title: 'Gat ekki skráð!',
+    text: 'Gékk ekki að skrá þig á viðburð',
+  });
 }
 
 indexRouter.get('/:slug', catchErrors(eventRoute));

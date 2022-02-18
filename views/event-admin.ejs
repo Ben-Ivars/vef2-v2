@@ -47,9 +47,9 @@
         <input type="text" name="name" id="name" value="<%= formData.name %>" class="" />
       </div>
 
-      <div class="field field--textarea<%= locals.isInvalid('comment', errors) ? ' field--invalid' : '' %>">
-        <label for="comment">Description:</label>
-        <textarea name="comment" id="comment"><%= formData.description %></textarea>
+      <div class="field field--textarea<%= locals.isInvalid('description', errors) ? ' field--invalid' : '' %>">
+        <label for="description">Description:</label>
+        <textarea name="description" id="description"><%= formData.description %></textarea>
       </div>
 
       <% if (errors.length> 0) { %>
@@ -67,6 +67,7 @@
 
           <button class="button button--large button--margin">Uppfæra!</button>
     </form>
+    <p><a href="/admin"> Til baka</a></p>
 
   </section>
 

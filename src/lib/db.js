@@ -47,8 +47,6 @@ export async function query(q, values = []) {
   }
 }
 
-
-
 export async function createSchema(schemaFile = SCHEMA_FILE) {
   const data = await readFile(schemaFile);
 
@@ -70,8 +68,6 @@ export async function insertFakes(insertFile = INSERT_FILE) {
 export async function end() {
   await pool.end();
 }
-
-/* TODO útfæra aðgeðir á móti gagnagrunni */
 
 /**
  * List all registrations from the signups table.
@@ -101,18 +97,11 @@ export async function listEvents(offset = 0, limit = 10) {
 
   return result;
 }
-// TODO fix for foreign key
 export async function deleteRowEvents(id) {
   let result = [];
   try {
-    const fixSignup = await query(
-      'DELETE FROM signup WHERE id = $1',
-      [id]
-    );
-    const queryResult = await query(
-      'DELETE FROM events WHERE id = $1',
-      [id]
-    );
+    const fixSignup = await query('DELETE FROM signup WHERE id = $1', [id]);
+    const queryResult = await query('DELETE FROM events WHERE id = $1', [id]);
 
     if (queryResult && queryResult.rows && fixSignup) {
       result = queryResult.rows;
@@ -133,11 +122,9 @@ export async function deleteRowEvents(id) {
 
  * @returns {Promise<boolean>} Promise, resolved as true if inserted, otherwise false
  */
-export async function insertEvent({
-  name, description,
-} = {}) {
+export async function insertEvent({ name, description } = {}) {
   let success = true;
-  const slug = strToSlug(name)
+  const slug = strToSlug(name);
   const q = `
     INSERT INTO events
       (name, slug, description)
@@ -247,7 +234,6 @@ export async function insertBooking({ name, comment, id } = {}) {
 
 export async function updateEvent(slug, { name, description } = {}) {
   let success = true;
-
   const q = `
     UPDATE events
     SET name = $1,

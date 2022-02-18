@@ -4,7 +4,7 @@ async function create() {
   await createSchema();
   await insertFakes();
   // eslint-disable-next-line no-console
-  console.log('schema created and fakes added')
+  console.log('schema created and fakes added');
   await end();
 }
 

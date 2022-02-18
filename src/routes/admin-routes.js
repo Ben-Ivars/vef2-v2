@@ -3,9 +3,13 @@ import { body, validationResult } from 'express-validator';
 import xss from 'xss';
 
 import {
-  listEvents, insertEvent, deleteRowEvents, updateEvent, selectEvent,
-  selectEventBookings
-} from '../lib/db.js'
+  listEvents,
+  insertEvent,
+  deleteRowEvents,
+  updateEvent,
+  selectEvent,
+  selectEventBookings,
+} from '../lib/db.js';
 import passport, { ensureLoggedIn } from '../lib/login.js';
 import { catchErrors } from '../lib/catch-errors.js';
 
@@ -17,7 +21,7 @@ async function adminRoute(req, res) {
   const formData = {
     name: '',
     description: '',
-  }
+  };
 
   const { search } = req.query;
 
@@ -47,8 +51,7 @@ async function adminEventRoute(req, res, next) {
   try {
     const queryResult = await selectEvent(req.params.slug);
     if (queryResult.length > 0) {
-      // eslint-disable-next-line prefer-destructuring
-      event = queryResult[0];
+      [event] = queryResult;
       bookings = await selectEventBookings(event.id);
     } else {
       next();
@@ -58,7 +61,14 @@ async function adminEventRoute(req, res, next) {
     console.error(e);
   }
 
-  res.render('event-admin', { title: event.name, event, bookings, errors, formData, admin });
+  res.render('event-admin', {
+    title: event.name,
+    event,
+    bookings,
+    errors,
+    formData,
+    admin,
+  });
 }
 
 function login(req, res) {
@@ -77,13 +87,13 @@ function login(req, res) {
 
   return res.render('login', { message, title: 'Innskráning' });
 }
-// TODO fix deleteRoute
 async function deleteRoute(req, res) {
   const { id } = req.params;
 
   const deleted = deleteRowEvents(id);
 
-  if (deleted) { // Tæknilega böggur hér...
+  if (deleted) {
+    // Tæknilega böggur hér...
     return res.redirect('/admin');
   }
 
@@ -106,7 +116,7 @@ adminRouter.post(
   // Ef við komumst hingað var notandi skráður inn, senda á /admin
   (req, res) => {
     res.redirect('/admin');
-  },
+  }
 );
 
 adminRouter.get('/logout', (req, res) => {
@@ -116,18 +126,13 @@ adminRouter.get('/logout', (req, res) => {
 });
 
 const validationMiddleware = [
-  body('name')
-    .isLength({ min: 1 })
-    .withMessage('Nafn má ekki vera tómt'),
+  body('name').isLength({ min: 1 }).withMessage('Nafn má ekki vera tómt'),
   body('name')
     .isLength({ max: 64 })
     .withMessage('Nafn má að hámarki vera 64 stafir'),
   body('description')
-    .isLength({ min: 1 })
-    .withMessage('Lýsing má ekki vera tómt'),
-  body('description')
     .isLength({ max: 400 })
-    .withMessage('Lýsing má að hámarki vera 400 stafir')
+    .withMessage('Lýsing má að hámarki vera 400 stafir'),
 ];
 
 // Viljum keyra sér og með validation, ver gegn „self XSS“
@@ -141,23 +146,53 @@ const sanitizationMiddleware = [
   body('description').trim().escape(),
 ];
 
-async function validationCheck(req, res, next) {
-  const {
-    name, description,
-  } = req.body;
-
+async function validationCheckNew(req, res, next) {
+  const { name, description } = req.body;
+  const { user } = req;
   const formData = {
-    name, description,
+    name,
+    description,
   };
-  const registrations = await listEvents();
-
   const validation = validationResult(req);
+  const events = await listEvents();
 
   if (!validation.isEmpty()) {
     return res.render('admin', {
-      formData,
+      title: 'Viðburðaumsjón',
+      subtitle: 'Viðburðir',
+      events,
+      user,
       errors: validation.errors,
-      registrations
+      formData,
+      admin: true,
+    });
+  }
+
+  return next();
+}
+
+async function validationCheckUpdate(req, res, next) {
+  const { name, description } = req.body;
+  const { user } = req;
+  let event = {};
+  let bookings = [];
+  const formData = {
+    name,
+    description,
+  };
+  const validation = validationResult(req);
+  event = await selectEvent(req.params.slug);
+  bookings = await selectEventBookings(event.id);
+
+  if (!validation.isEmpty()) {
+    return res.render('event-admin', {
+      title: event.name,
+      event,
+      user,
+      errors: validation.errors,
+      formData,
+      admin: true,
+      bookings,
     });
   }
 
@@ -171,11 +206,11 @@ async function fixEvent(req, res) {
   try {
     const queryResult = await selectEvent(req.params.slug);
     if (queryResult.length > 0) {
-      event = queryResult[0];
+      [event] = queryResult;
       success = await updateEvent(req.params.slug, {
-        name, description,
+        name,
+        description,
       });
-
     } else {
       success = false;
     }
@@ -189,7 +224,7 @@ async function fixEvent(req, res) {
 
   return res.render('error', {
     title: 'Gat ekki uppfært viðburð!',
-    text: 'Gékk ekki að uppfæra viðburð'
+    text: 'Gékk ekki að uppfæra viðburð',
   });
 }
 
@@ -198,7 +233,8 @@ async function registerEvent(req, res) {
   let success = true;
   try {
     success = await insertEvent({
-      name, description,
+      name,
+      description,
     });
   } catch (e) {
     console.error(e);
@@ -210,26 +246,26 @@ async function registerEvent(req, res) {
 
   return res.render('error', {
     title: 'Gat ekki skráð viðburð!',
-    text: 'Gékk ekki að skrá viðburð'
+    text: 'Gékk ekki að skrá viðburð',
   });
 }
 
-// TODO fix admin skra vidburd
-adminRouter.get('/:slug', catchErrors(adminEventRoute));
+adminRouter.get('/:slug', ensureLoggedIn, catchErrors(adminEventRoute));
 adminRouter.post(
   '/:slug',
+  ensureLoggedIn,
   validationMiddleware,
   xssSanitizationMiddleware,
   sanitizationMiddleware,
-  // catchErrors(validationCheck),
-  catchErrors(fixEvent),
+  catchErrors(validationCheckUpdate),
+  catchErrors(fixEvent)
 );
 adminRouter.post(
   '/',
+  ensureLoggedIn,
   validationMiddleware,
   xssSanitizationMiddleware,
   sanitizationMiddleware,
-  // catchErrors(validationCheck),
-  catchErrors(registerEvent),
+  catchErrors(validationCheckNew),
+  catchErrors(registerEvent)
 );
-

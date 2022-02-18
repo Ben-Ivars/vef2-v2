@@ -36,26 +36,25 @@ app.set('views', join(path, '../views'));
 app.set('view engine', 'ejs');
 
 // added
-app.use(session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  maxAge: 20 * 1000, // 20 sek
-}));
+app.use(
+  session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    maxAge: 20 * 1000, // 20 sek
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.locals = {
-  // TODO hjálparföll fyrir template
   formatDate,
   isInvalid,
 };
 
 app.use('/admin', adminRouter);
 app.use('/', indexRouter);
-// TODO admin routes
-
 
 /** Middleware sem sér um 404 villur. */
 app.use((req, res) => {
