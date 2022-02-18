@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
-import { format } from 'date-fns';
 
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
