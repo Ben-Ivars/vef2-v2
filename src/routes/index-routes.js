@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import xss from 'xss';
@@ -87,7 +88,6 @@ async function validationCheck(req, res, next) {
   try {
     const queryResult = await selectEvent(req.params.slug);
     if (queryResult.length > 0) {
-      // eslint-disable-next-line prefer-destructuring
       [event] = queryResult;
       bookings = await selectEventBookings(event.id);
     } else {
